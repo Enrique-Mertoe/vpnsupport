@@ -15,5 +15,5 @@ echo "Redis is ready!"
 
 # Start Gunicorn
 echo "Starting Gunicorn..."
-exec gunicorn --config gunicorn_config.py --log-level debug app:app
+#exec gunicorn --config gunicorn_config.py --log-level debug app:app
 #exec gunicorn --bind 0.0.0.0:5000 --workers 2 --timeout 60 --log-level debug app:app
