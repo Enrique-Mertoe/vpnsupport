@@ -21,6 +21,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
+# Ensure start.sh is executable
+RUN chmod +x /app/start.sh
+
 # Create necessary directories
 RUN mkdir -p /var/log/app /app/dev_certs /app/logs && \
     chmod -R 777 /var/log/app /app/dev_certs /app/logs && \
