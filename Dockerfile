@@ -7,6 +7,9 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
+    procps \
+    curl \
+    redis-tools \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first to leverage Docker cache
@@ -19,15 +22,22 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Create necessary directories
-RUN mkdir -p /var/log/app /app/dev_certs /app/logs
+RUN mkdir -p /var/log/app /app/dev_certs /app/logs && \
+    chmod -R 777 /var/log/app /app/dev_certs /app/logs && \
+    chmod +x start.sh
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV FLASK_APP=app.py
 ENV FLASK_ENV=production
+ENV PYTHONPATH=/app
 
 # Expose port
 EXPOSE 5000
 
-# Start Gunicorn with the new configuration
-CMD ["gunicorn", "--config", "gunicorn_config.py", "app:app"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:5000/health || exit 1
+
+# Use the startup script
+CMD ["./start.sh"]

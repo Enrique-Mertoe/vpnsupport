@@ -1,20 +1,23 @@
 import multiprocessing
+import os
 
 # Server socket
 bind = "0.0.0.0:5000"
 backlog = 2048
 
 # Worker processes
-workers = multiprocessing.cpu_count() * 2 + 1
+workers = 2  # Reduced from CPU count to ensure stability
 worker_class = 'sync'
 worker_connections = 1000
-timeout = 30
-keepalive = 2
+timeout = 60  # Increased timeout
+keepalive = 5
+max_requests = 1000
+max_requests_jitter = 50
 
 # Logging
 accesslog = '-'
 errorlog = '-'
-loglevel = 'info'
+loglevel = 'debug'  # Changed to debug for more information
 access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
 
 # Process naming
@@ -35,4 +38,14 @@ certfile = None
 # Security
 limit_request_line = 4094
 limit_request_fields = 100
-limit_request_field_size = 8190 
+limit_request_field_size = 8190
+
+# Worker settings
+preload_app = False  # Changed to False to ensure proper initialization
+reload = False
+reload_extra_files = []
+reload_engine = 'auto'
+
+# Error handling
+graceful_timeout = 120
+forwarded_allow_ips = '*'
