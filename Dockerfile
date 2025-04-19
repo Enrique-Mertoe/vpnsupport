@@ -40,10 +40,6 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:5000/health || exit 1
 
 # Use the startup script
-chmod +x start.sh
-chmod +x monitor.sh
-chmod +x uninstall.sh
-chmod +x logs.sh
-chmod +x restart.sh
-chmod +x domain_manager.sh
+
+CMD ["chmod +x start.sh"]
 CMD ["./start.sh"]

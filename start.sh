@@ -1,5 +1,10 @@
 #!/bin/bash
 
+chmod +x monitor.sh
+chmod +x uninstall.sh
+chmod +x logs.sh
+chmod +x restart.sh
+chmod +x domain_manager.sh
 # Wait for Redis to be ready
 echo "Waiting for Redis to be ready..."
 #while ! redis-cli -h redis ping > /dev/null 2>&1; do
