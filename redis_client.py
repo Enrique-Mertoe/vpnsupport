@@ -6,6 +6,7 @@ def get_redis_client():
     """Get a Redis client instance."""
     try:
         redis_url = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+        print("healthy")
         return redis.from_url(redis_url, decode_responses=True)
     except Exception as e:
         raise Exception(f"Failed to connect to Redis: {str(e)}")

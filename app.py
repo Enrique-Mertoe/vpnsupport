@@ -7,6 +7,7 @@ It will also be accessed with Mikrotik to fetch these certs and install them on 
 """
 import os
 import logging
+from pathlib import Path
 from flask import Flask, jsonify, send_file, send_from_directory
 import openvpn_api
 from celery.result import AsyncResult
@@ -19,12 +20,17 @@ from security import validate_provision_identity, generate_secret, require_secre
 from tasks import generate_certificate
 from redis_client import redis_client
 
+# Create logs directory if it doesn't exist
+log_dir = Path('logs')
+log_dir.mkdir(exist_ok=True)
+log_file = log_dir / 'app.log'
+
 # Configure logging
 logging.basicConfig(
     level=os.getenv('LOG_LEVEL', 'INFO'),
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('/var/log/app/app.log'),
+        logging.FileHandler(log_file),
         logging.StreamHandler()
     ]
 )
