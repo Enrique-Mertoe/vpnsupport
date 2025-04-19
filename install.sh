@@ -93,7 +93,7 @@ confirm() {
 echo -e "${YELLOW}Starting VPN Service Installation...${NC}"
 
 # Check OpenVPN server first
-check_openvpn
+#check_openvpn
 
 # Check if Python is installed
 if ! command -v python3 &> /dev/null; then
