@@ -102,20 +102,20 @@ if ! command -v python3 &> /dev/null; then
 fi
 
 # Check if virtualenv is installed
-if ! command -v virtualenv &> /dev/null; then
-    echo -e "${YELLOW}Installing virtualenv...${NC}"
-    pip install virtualenv
-fi
+#if ! command -v virtualenv &> /dev/null; then
+#    echo -e "${YELLOW}Installing virtualenv...${NC}"
+#    pip install virtualenv
+#fi
 
 # Create and activate virtual environment
-if [ ! -d "venv" ]; then
-    echo -e "${YELLOW}Creating virtual environment...${NC}"
-    virtualenv venv
-fi
+#if [ ! -d "venv" ]; then
+#    echo -e "${YELLOW}Creating virtual environment...${NC}"
+#    virtualenv venv
+#fi
 
 # Activate virtual environment
-echo -e "${YELLOW}Activating virtual environment...${NC}"
-source venv/bin/activate
+#echo -e "${YELLOW}Activating virtual environment...${NC}"
+#source venv/bin/activate
 
 # Install Python dependencies
 echo -e "${YELLOW}Installing Python dependencies...${NC}"
