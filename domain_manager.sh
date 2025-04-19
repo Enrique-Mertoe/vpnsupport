@@ -12,6 +12,36 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
+# Function to install dnsutils
+install_dnsutils() {
+    echo -e "${YELLOW}Checking for dnsutils...${NC}"
+
+    if ! command_exists dig; then
+        echo -e "${YELLOW}dnsutils is not installed. Installing...${NC}"
+
+        if command_exists apt-get; then
+            sudo apt-get update
+            sudo apt-get install -y dnsutils
+        elif command_exists yum; then
+            sudo yum install -y bind-utils
+        else
+            echo -e "${RED}Could not determine package manager. Please install dnsutils manually.${NC}"
+            echo -e "${YELLOW}For Ubuntu/Debian: sudo apt-get install dnsutils${NC}"
+            echo -e "${YELLOW}For CentOS/RHEL: sudo yum install bind-utils${NC}"
+            exit 1
+        fi
+
+        if ! command_exists dig; then
+            echo -e "${RED}Failed to install dnsutils. Please install it manually.${NC}"
+            exit 1
+        fi
+
+        echo -e "${GREEN}dnsutils installed successfully${NC}"
+    else
+        echo -e "${GREEN}dnsutils is already installed${NC}"
+    fi
+}
+
 # Function to check and install Nginx
 check_nginx() {
     echo -e "${YELLOW}Checking Nginx installation...${NC}"
@@ -231,25 +261,43 @@ verify_dns_propagation() {
     local server_ip=$(curl -s ifconfig.me)
     local max_attempts=12
     local attempt=1
-    local wait_time=300  # 5 minutes
+    local wait_time=60  # 1 minute
 
     echo -e "${YELLOW}Verifying DNS propagation...${NC}"
+
+    # Install dnsutils if not present
+    install_dnsutils
 
     while [ $attempt -le $max_attempts ]; do
         echo -e "${BLUE}Attempt $attempt of $max_attempts${NC}"
 
-        # Check A record
-        local dns_ip=$(dig +short A $domain)
+        # Try multiple DNS resolvers
+        local dns_ip=""
+        for resolver in "8.8.8.8" "1.1.1.1" "208.67.222.222"; do
+            echo -e "${YELLOW}Checking with resolver $resolver...${NC}"
+            dns_ip=$(dig @$resolver +short A $domain)
+            if [ ! -z "$dns_ip" ]; then
+                break
+            fi
+        done
 
-        if [ "$dns_ip" = "$server_ip" ]; then
-            echo -e "${GREEN}DNS A record is properly configured!${NC}"
-            return 0
+        if [ ! -z "$dns_ip" ]; then
+            if [ "$dns_ip" = "$server_ip" ]; then
+                echo -e "${GREEN}DNS A record is properly configured!${NC}"
+                return 0
+            else
+                echo -e "${YELLOW}DNS A record not yet propagated (got $dns_ip, expected $server_ip)${NC}"
+            fi
         else
-            echo -e "${YELLOW}DNS A record not yet propagated (got $dns_ip, expected $server_ip)${NC}"
+            echo -e "${YELLOW}No DNS A record found yet${NC}"
+        fi
+
+        if [ $attempt -lt $max_attempts ]; then
             echo -e "${YELLOW}Waiting $wait_time seconds before next attempt...${NC}"
             sleep $wait_time
-            attempt=$((attempt + 1))
         fi
+
+        attempt=$((attempt + 1))
     done
 
     echo -e "${RED}DNS propagation check timed out after $((max_attempts * wait_time / 60)) minutes${NC}"
@@ -257,6 +305,10 @@ verify_dns_propagation() {
     echo "1. Wait longer and run this script again"
     echo "2. Check your DNS settings"
     echo "3. Contact your DNS provider"
+    echo -e "\n${YELLOW}To verify DNS manually, you can run:${NC}"
+    echo "dig A $domain"
+    echo "or"
+    echo "nslookup $domain"
     return 1
 }
 
