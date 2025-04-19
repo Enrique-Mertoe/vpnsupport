@@ -17,6 +17,7 @@ from helper import generate_ovpn_config
 from config import Config
 from security import validate_provision_identity, generate_secret, require_secret
 from tasks import generate_certificate
+from redis_client import redis_client
 
 # Configure logging
 logging.basicConfig(
@@ -55,7 +56,7 @@ def health_check():
     """Health check endpoint for Docker."""
     try:
         # Check Redis connection
-        redis_status = "healthy"
+        redis_status = "healthy" if redis_client.ping() else "unhealthy"
         # Check OpenVPN connection
         vpn_status = "healthy"
         # Check certificate directory
