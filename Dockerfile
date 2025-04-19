@@ -44,4 +44,5 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 
 # Use the startup script
 
-CMD ["./start.sh"]
+#CMD ["./start.sh"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
