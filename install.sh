@@ -12,70 +12,70 @@ command_exists() {
 }
 
 # Function to check OpenVPN server
-#check_openvpn() {
-#    echo -e "${YELLOW}Checking OpenVPN server...${NC}"
-#
-#    # Check if OpenVPN is installed
-##    if ! command_exists openvpn; then
-##        echo -e "${RED}OpenVPN is not installed.${NC}"
-##        echo -e "${YELLOW}Recommended installation method:${NC}"
-##        echo -e "  wget https://git.io/vpn -O openvpn-install.sh"
-##        echo -e "  chmod +x openvpn-install.sh"
-##        echo -e "  sudo ./openvpn-install.sh"
-##        echo -e "\n${YELLOW}Alternative installation methods:${NC}"
-##        if command_exists apt-get; then
-##            echo "  sudo apt-get update && sudo apt-get install -y openvpn"
-##        elif command_exists yum; then
-##            echo "  sudo yum install -y openvpn"
-##        else
-##            echo "  Please install OpenVPN using your package manager"
-##        fi
-##        exit 1
-##    fi
-#
-#    # Check if OpenVPN service is running
-##    if ! systemctl is-active --quiet openvpn; then
-##        echo -e "${RED}OpenVPN service is not running.${NC}"
-##        echo -e "${YELLOW}To start OpenVPN, run:${NC}"
-##        echo "  sudo systemctl start openvpn"
-##        exit 1
-##    fi
-#
-#    # Check for server configuration
-#    if [ ! -f "/etc/openvpn/server.conf" ]; then
-#        echo -e "${RED}OpenVPN server configuration not found.${NC}"
-#        echo -e "${YELLOW}Please ensure you have a valid server configuration at /etc/openvpn/server.conf${NC}"
-#        echo -e "${YELLOW}You can use the recommended installer script to set this up:${NC}"
-#        echo -e "  wget https://git.io/vpn -O openvpn-install.sh"
-#        echo -e "  chmod +x openvpn-install.sh"
-#        echo -e "  sudo ./openvpn-install.sh"
-#        exit 1
-#    fi
-#
-#    # Check for easy-rsa
-#    if [ ! -d "/etc/openvpn/easy-rsa" ]; then
-#        echo -e "${RED}Easy-RSA directory not found.${NC}"
-#        echo -e "${YELLOW}Please ensure easy-rsa is properly installed and configured.${NC}"
-#        echo -e "${YELLOW}You can use the recommended installer script to set this up:${NC}"
-#        echo -e "  wget https://git.io/vpn -O openvpn-install.sh"
-#        echo -e "  chmod +x openvpn-install.sh"
-#        echo -e "  sudo ./openvpn-install.sh"
-#        exit 1
-#    fi
-#
-#    # Check for CA certificate
-#    if [ ! -f "/etc/openvpn/easy-rsa/pki/ca.crt" ]; then
-#        echo -e "${RED}CA certificate not found.${NC}"
-#        echo -e "${YELLOW}Please ensure you have generated a CA certificate.${NC}"
-#        echo -e "${YELLOW}You can use the recommended installer script to set this up:${NC}"
-#        echo -e "  wget https://git.io/vpn -O openvpn-install.sh"
-#        echo -e "  chmod +x openvpn-install.sh"
-#        echo -e "  sudo ./openvpn-install.sh"
-#        exit 1
-#    fi
-#
-#    echo -e "${GREEN}OpenVPN server check passed${NC}"
-#}
+check_openvpn() {
+    echo -e "${YELLOW}Checking OpenVPN server...${NC}"
+
+    # Check if OpenVPN is installed
+    if ! command_exists openvpn; then
+        echo -e "${RED}OpenVPN is not installed.${NC}"
+        echo -e "${YELLOW}Recommended installation method:${NC}"
+        echo -e "  wget https://git.io/vpn -O openvpn-install.sh"
+        echo -e "  chmod +x openvpn-install.sh"
+        echo -e "  sudo ./openvpn-install.sh"
+        echo -e "\n${YELLOW}Alternative installation methods:${NC}"
+        if command_exists apt-get; then
+            echo "  sudo apt-get update && sudo apt-get install -y openvpn"
+        elif command_exists yum; then
+            echo "  sudo yum install -y openvpn"
+        else
+            echo "  Please install OpenVPN using your package manager"
+        fi
+        exit 1
+    fi
+
+    # Check if OpenVPN service is running
+    if ! systemctl is-active --quiet openvpn; then
+        echo -e "${RED}OpenVPN service is not running.${NC}"
+        echo -e "${YELLOW}To start OpenVPN, run:${NC}"
+        echo "  sudo systemctl start openvpn"
+        exit 1
+    fi
+
+    # Check for server configuration
+    if [ ! -f "/etc/openvpn/server.conf" ]; then
+        echo -e "${RED}OpenVPN server configuration not found.${NC}"
+        echo -e "${YELLOW}Please ensure you have a valid server configuration at /etc/openvpn/server.conf${NC}"
+        echo -e "${YELLOW}You can use the recommended installer script to set this up:${NC}"
+        echo -e "  wget https://git.io/vpn -O openvpn-install.sh"
+        echo -e "  chmod +x openvpn-install.sh"
+        echo -e "  sudo ./openvpn-install.sh"
+        exit 1
+    fi
+
+    # Check for easy-rsa
+    if [ ! -d "/etc/openvpn/easy-rsa" ]; then
+        echo -e "${RED}Easy-RSA directory not found.${NC}"
+        echo -e "${YELLOW}Please ensure easy-rsa is properly installed and configured.${NC}"
+        echo -e "${YELLOW}You can use the recommended installer script to set this up:${NC}"
+        echo -e "  wget https://git.io/vpn -O openvpn-install.sh"
+        echo -e "  chmod +x openvpn-install.sh"
+        echo -e "  sudo ./openvpn-install.sh"
+        exit 1
+    fi
+
+    # Check for CA certificate
+    if [ ! -f "/etc/openvpn/easy-rsa/pki/ca.crt" ]; then
+        echo -e "${RED}CA certificate not found.${NC}"
+        echo -e "${YELLOW}Please ensure you have generated a CA certificate.${NC}"
+        echo -e "${YELLOW}You can use the recommended installer script to set this up:${NC}"
+        echo -e "  wget https://git.io/vpn -O openvpn-install.sh"
+        echo -e "  chmod +x openvpn-install.sh"
+        echo -e "  sudo ./openvpn-install.sh"
+        exit 1
+    fi
+
+    echo -e "${GREEN}OpenVPN server check passed${NC}"
+}
 
 # Function to confirm action
 confirm() {
