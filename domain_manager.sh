@@ -4,6 +4,7 @@
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Function to check if a command exists
@@ -182,18 +183,116 @@ EOF
     echo -e "${GREEN}Domain configuration completed${NC}"
 }
 
-# Function to obtain SSL certificate
+# Function to check DNS records
+check_dns_records() {
+    local domain=$1
+    local server_ip=$(curl -s ifconfig.me)
+
+    echo -e "${YELLOW}Checking DNS records for $domain...${NC}"
+    echo -e "${BLUE}Your server's public IP address is: $server_ip${NC}"
+    echo -e "\n${YELLOW}Please ensure the following DNS records are set up:${NC}"
+    echo -e "1. A Record: $domain -> $server_ip"
+    echo -e "2. AAAA Record (if IPv6 is available): $domain -> [Your IPv6 address]"
+    echo -e "\n${YELLOW}Instructions for common DNS providers:${NC}"
+    echo -e "${BLUE}Cloudflare:${NC}"
+    echo "1. Log in to your Cloudflare account"
+    echo "2. Select your domain"
+    echo "3. Go to DNS settings"
+    echo "4. Add A record: Type=A, Name=$domain, Content=$server_ip, Proxy status=DNS only"
+    echo -e "\n${BLUE}GoDaddy:${NC}"
+    echo "1. Log in to your GoDaddy account"
+    echo "2. Go to Domain Settings"
+    echo "3. Select DNS Management"
+    echo "4. Add A record: Type=A, Host=@, Points to=$server_ip"
+    echo -e "\n${BLUE}Namecheap:${NC}"
+    echo "1. Log in to your Namecheap account"
+    echo "2. Go to Domain List"
+    echo "3. Click Manage next to your domain"
+    echo "4. Go to Advanced DNS"
+    echo "5. Add A record: Type=A Record, Host=@, Value=$server_ip"
+
+    read -p "Have you set up the DNS records? (y/N) " response
+    case "$response" in
+        [yY][eE][sS]|[yY])
+            # Wait for DNS propagation
+            echo -e "${YELLOW}Waiting for DNS propagation (this may take up to 24 hours, but usually 5-10 minutes)...${NC}"
+            return 0
+            ;;
+        *)
+            echo -e "${RED}Please set up the DNS records first and then run this script again.${NC}"
+            exit 1
+            ;;
+    esac
+}
+
+# Function to verify DNS propagation
+verify_dns_propagation() {
+    local domain=$1
+    local server_ip=$(curl -s ifconfig.me)
+    local max_attempts=12
+    local attempt=1
+    local wait_time=300  # 5 minutes
+
+    echo -e "${YELLOW}Verifying DNS propagation...${NC}"
+
+    while [ $attempt -le $max_attempts ]; do
+        echo -e "${BLUE}Attempt $attempt of $max_attempts${NC}"
+
+        # Check A record
+        local dns_ip=$(dig +short A $domain)
+
+        if [ "$dns_ip" = "$server_ip" ]; then
+            echo -e "${GREEN}DNS A record is properly configured!${NC}"
+            return 0
+        else
+            echo -e "${YELLOW}DNS A record not yet propagated (got $dns_ip, expected $server_ip)${NC}"
+            echo -e "${YELLOW}Waiting $wait_time seconds before next attempt...${NC}"
+            sleep $wait_time
+            attempt=$((attempt + 1))
+        fi
+    done
+
+    echo -e "${RED}DNS propagation check timed out after $((max_attempts * wait_time / 60)) minutes${NC}"
+    echo -e "${YELLOW}You can:${NC}"
+    echo "1. Wait longer and run this script again"
+    echo "2. Check your DNS settings"
+    echo "3. Contact your DNS provider"
+    return 1
+}
+
+# Function to obtain SSL certificate with retry
 obtain_ssl() {
     local domain=$1
+    local max_attempts=3
+    local attempt=1
 
     echo -e "${YELLOW}Obtaining SSL certificate for $domain...${NC}"
 
-    if sudo certbot --nginx -d $domain --non-interactive --agree-tos --email admin@$domain; then
-        echo -e "${GREEN}SSL certificate obtained successfully${NC}"
-    else
-        echo -e "${RED}Failed to obtain SSL certificate${NC}"
-        exit 1
-    fi
+    while [ $attempt -le $max_attempts ]; do
+        echo -e "${BLUE}Attempt $attempt of $max_attempts${NC}"
+
+        if sudo certbot --nginx -d $domain --non-interactive --agree-tos --email admin@$domain; then
+            echo -e "${GREEN}SSL certificate obtained successfully${NC}"
+            return 0
+        else
+            echo -e "${RED}Attempt $attempt failed${NC}"
+
+            if [ $attempt -lt $max_attempts ]; then
+                echo -e "${YELLOW}Waiting 5 minutes before retry...${NC}"
+                sleep 300
+            fi
+
+            attempt=$((attempt + 1))
+        fi
+    done
+
+    echo -e "${RED}Failed to obtain SSL certificate after $max_attempts attempts${NC}"
+    echo -e "${YELLOW}Please check:${NC}"
+    echo "1. DNS records are properly configured"
+    echo "2. Your server is accessible from the internet"
+    echo "3. Port 80 is open and not blocked by firewall"
+    echo "4. Your domain is not blacklisted"
+    return 1
 }
 
 # Function to remove domain
@@ -270,6 +369,11 @@ while true; do
                 continue
             fi
 
+            # Check and verify DNS records
+            check_dns_records "$domain"
+            verify_dns_propagation "$domain"
+
+            # Configure domain and obtain SSL
             configure_domain "$domain" "$subdomain"
             obtain_ssl "$domain"
             ;;
