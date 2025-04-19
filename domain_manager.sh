@@ -28,12 +28,13 @@ install_requirements() {
 # Function to check if domain is valid
 check_domain() {
     local domain=$1
-    if [[ $domain =~ ^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$ ]]; then
+    if [[ $domain =~ ^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$ ]]; then
         return 0
     else
         return 1
     fi
 }
+
 
 # Function to configure Nginx for a domain
 configure_nginx() {
